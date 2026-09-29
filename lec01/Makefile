@@ -1,5 +1,5 @@
 CXX      = g++
-CXXFLAGS = -O2 -std=c++17 -Wall
+CXXFLAGS = -O3 -std=c++17 -Wall
 
 all: gen_input sum_pthread sum_openmp
 
@@ -12,10 +12,12 @@ sum_pthread: sum_pthread.cpp
 sum_openmp: sum_openmp.cpp
 	$(CXX) $(CXXFLAGS) -fopenmp -o $@ $<
 
-data: gen_input
+data: data.bin
+
+data.bin: gen_input
 	./gen_input 100000000 data.bin
 
-run: sum_pthread sum_openmp
+run: sum_pthread sum_openmp data.bin
 	for p in 1 2 4 8 16; do \
 		echo "=== Pthreads, P = $$p ==="; ./sum_pthread data.bin $$p; \
 		echo "=== OpenMP,   P = $$p ==="; ./sum_openmp data.bin $$p; \

@@ -32,26 +32,25 @@ Output format:
 
 ```
 N = 100000000, P = 8
-Sequential: sum = 4949755456, time = 74.0 ms
-Parallel:   sum = 4949755456, time = 9.6 ms
-Speedup:    7.67x
+Sequential: sum = 4949755456, time = 52.3 ms
+Parallel:   sum = 4949755456, time = 7.6 ms
+Speedup:    6.89x
 Result:     CORRECT
 ```
 
-Measured results with `make run` (Intel Xeon Platinum 8468, 48 cores,
+Measured results from one `make run` (Intel Xeon Platinum 8468, 48 cores,
 Ubuntu 24.04, g++ 13.3). Your numbers will differ.
 
 | P  | Pthreads speedup | OpenMP speedup |
 |----|------------------|----------------|
-| 1  | 1.16x            | 1.01x          |
-| 2  | 2.13x            | 1.90x          |
-| 4  | 4.19x            | 3.79x          |
-| 8  | 7.67x            | 7.17x          |
-| 16 | 10.45x           | 9.88x          |
+| 1  | 0.99x            | 1.01x          |
+| 2  | 1.97x            | 2.00x          |
+| 4  | 3.67x            | 3.82x          |
+| 8  | 6.89x            | 6.65x          |
+| 16 | 9.78x            | 8.77x          |
 
-All runs printed `Result: CORRECT`. The Pthreads P = 1 speedup above 1x is a
-code-layout effect: the compiler generated the same loop at a slightly
-unlucky address for the sequential version. It is not a real gain.
+All runs printed `Result: CORRECT`. The numbers vary a little from run to run
+(e.g. P = 8 ranged from 5.2x to 6.9x over three runs), so run it a few times.
 
 ## Things to observe and discuss
 
