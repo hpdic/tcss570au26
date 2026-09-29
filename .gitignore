@@ -1,0 +1,8 @@
+# Compiled binaries
+gen_input
+sum_pthread
+sum_openmp
+*.o
+
+# Generated data files
+*.bin

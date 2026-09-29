@@ -1,0 +1,78 @@
+# Lecture 1: Parallel Array Sum
+
+This demo sums an array of N integers with P threads. It solves the problem
+twice: once with Pthreads, where we do all the work by hand, and once with
+OpenMP, where a single pragma does it. Each program first times a sequential
+loop, then times the parallel version, and checks that the two sums match.
+
+## Files
+
+- `gen_input.cpp` - writes N random integers in [0, 100) to a binary file (fixed seed).
+- `sum_pthread.cpp` - sequential sum vs. Pthreads parallel sum.
+- `sum_openmp.cpp` - sequential sum vs. OpenMP parallel sum.
+- `Makefile` - builds the programs, generates data, runs the experiment.
+
+## Build and run
+
+```
+make          # build gen_input, sum_pthread, sum_openmp
+make data     # create data.bin with N = 100,000,000 (about 400 MB)
+make run      # run both programs with P = 1, 2, 4, 8, 16
+```
+
+To run a single program by hand:
+
+```
+./gen_input 100000000 data.bin
+./sum_pthread data.bin 8
+./sum_openmp data.bin 8
+```
+
+Output format:
+
+```
+N = 100000000, P = 8
+Sequential: sum = 4949755456, time = 74.0 ms
+Parallel:   sum = 4949755456, time = 9.6 ms
+Speedup:    7.67x
+Result:     CORRECT
+```
+
+Measured results with `make run` (Intel Xeon Platinum 8468, 48 cores,
+Ubuntu 24.04, g++ 13.3). Your numbers will differ.
+
+| P  | Pthreads speedup | OpenMP speedup |
+|----|------------------|----------------|
+| 1  | 1.16x            | 1.01x          |
+| 2  | 2.13x            | 1.90x          |
+| 4  | 4.19x            | 3.79x          |
+| 8  | 7.67x            | 7.17x          |
+| 16 | 10.45x           | 9.88x          |
+
+All runs printed `Result: CORRECT`. The Pthreads P = 1 speedup above 1x is a
+code-layout effect: the compiler generated the same loop at a slightly
+unlucky address for the sequential version. It is not a real gain.
+
+## Things to observe and discuss
+
+- **Amount of code.** Compare the parallel part of the two programs. With
+  Pthreads we partition the array, pack arguments into a struct, create
+  threads, join them, and combine the partial sums ourselves. OpenMP does all
+  of that with one `#pragma omp parallel for reduction(+:sum)`.
+- **The speedup is not linear in P.** It grows more slowly than P and levels
+  off as P increases. The main reason: each element needs just one addition, so
+  the cores spend most of their time waiting for data from memory. The program
+  is *memory-bandwidth bound*, and adding cores does not add memory bandwidth.
+  Thread creation overhead also matters, especially when N is small.
+- **Try a small N:** `./gen_input 10000 small.bin`, then `./sum_pthread small.bin 8`.
+  The parallel version is probably *slower* than the sequential one. Why?
+- **Why integers instead of doubles?** Floating-point addition is not
+  associative: `(a + b) + c` can differ from `a + (b + c)` in the last bits.
+  A parallel sum adds the numbers in a different order, so a sum of doubles
+  might not match the sequential result exactly. Integer sums always match, so
+  we can check correctness with `==`.
+
+## Note for macOS
+
+Apple's default `clang` does not support `-fopenmp`. Use a Linux machine, or
+install GCC (e.g. `brew install gcc`) and set `CXX=g++-14` (or your version).
