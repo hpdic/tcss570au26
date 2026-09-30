@@ -40,11 +40,20 @@ int main(int argc, char* argv[]) {
     for (int64_t i = 0; i < n; i++) seq_sum += data[i];
     double seq_ms = ms_since(t0);
 
-    // Parallel version. OpenMP partitions the loop, creates the threads, gives
-    // each a private copy of sum, and combines them at the end (reduction).
+    // Parallel version: the pragma does everything sum_pthread.cpp does by hand.
     auto t1 = Clock::now();
     int64_t par_sum = 0;
     omp_set_num_threads(p);
+    // "parallel":  create a team of P threads (like pthread_create).
+    // "for":       split the iterations among the threads; with GCC's default
+    //              static schedule, one contiguous block each (like [t*N/P, (t+1)*N/P)).
+    // "reduction(+:par_sum)": each thread adds into its own private copy of
+    //              par_sum, starting at 0 (like the local variable); at the end
+    //              the copies are added into par_sum (like summing partial[]).
+    //              Without it, all threads would update one shared par_sum at
+    //              the same time (a data race) and the result would be WRONG.
+    // The implicit barrier at the end of the loop waits for all threads
+    // (like pthread_join).
     #pragma omp parallel for reduction(+:par_sum)
     for (int64_t i = 0; i < n; i++) par_sum += data[i];
     double par_ms = ms_since(t1);
