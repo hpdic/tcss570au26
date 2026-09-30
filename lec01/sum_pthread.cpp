@@ -27,13 +27,15 @@ double ms_since(Clock::time_point start) {
 
 // Everything a thread needs to know about its share of the work.
 struct ThreadArgs {
-    int id;
-    const int32_t* data;
-    int64_t n;
-    int p;
-    int64_t* partial;
+    int id;               // thread id t, 0 .. P-1
+    const int32_t* data;  // shared input; const: threads only read it
+    int64_t n;            // total number of elements N
+    int p;                // number of threads P
+    int64_t* partial;     // shared output array; thread t writes only partial[t]
 };
 
+// Thread function. Pthreads requires the signature void* f(void*), so the
+// argument arrives as void* and is cast back to ThreadArgs*.
 void* worker(void* arg) {
     ThreadArgs* a = (ThreadArgs*)arg;
     // Block partitioning: thread t handles [t*N/P, (t+1)*N/P).
@@ -67,7 +69,12 @@ int main(int argc, char* argv[]) {
     std::vector<ThreadArgs> args(p);
     std::vector<int64_t> partial(p);
     for (int t = 0; t < p; t++) {
+        // Each thread gets its own args[t]; sharing one struct would be a race,
+        // since the loop would overwrite it while threads are still reading it.
         args[t] = {t, data.data(), n, p, partial.data()};
+        // Start a new thread running worker(&args[t]). Arguments: where to
+        // store the thread handle, attributes (nullptr = defaults), the
+        // function to run, and the one pointer passed to it.
         pthread_create(&threads[t], nullptr, worker, &args[t]);
     }
     // Join: wait for every thread to finish, then combine the partial sums.
