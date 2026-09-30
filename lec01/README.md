@@ -63,8 +63,6 @@ All runs printed `Result: CORRECT`. The numbers vary a little from run to run
   the cores spend most of their time waiting for data from memory. The program
   is *memory-bandwidth bound*, and adding cores does not add memory bandwidth.
   Thread creation overhead also matters, especially when N is small.
-- **Try a small N:** `./gen_input 10000 small.bin`, then `./sum_pthread small.bin 8`.
-  The parallel version is probably *slower* than the sequential one. Why?
 - **Why integers instead of doubles?** Floating-point addition is not
   associative: `(a + b) + c` can differ from `a + (b + c)` in the last bits.
   A parallel sum adds the numbers in a different order, so a sum of doubles
