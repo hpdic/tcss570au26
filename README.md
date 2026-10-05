@@ -3,3 +3,4 @@
 TCSS 570 Introduction to Parallel Computing, Autumn 2026 - course code examples.
 
 - `lec01/` - Lecture 1: parallel array sum with Pthreads and OpenMP
+- `lec02/` - Lecture 2: weak scaling of the array sum with OpenMP

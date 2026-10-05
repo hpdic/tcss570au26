@@ -2,6 +2,7 @@
 gen_input
 sum_pthread
 sum_openmp
+sum_weak
 *.o
 
 # Generated data files
