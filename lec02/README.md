@@ -37,19 +37,6 @@ efficiency is E(P) = T(1) / T(P). In the ideal case every thread does the same
 amount of work no matter how many threads there are, so the run time stays
 flat and the efficiency stays at 1.00.
 
-## Things to observe and discuss
-
-- **Does the run time stay flat?** Where does it start to rise, and why? The
-  sum does only one addition per 4 bytes loaded, so it is memory-bound, and
-  all cores share the same memory bandwidth. Caches matter too: if one
-  thread's 16 MB fits in your CPU's last-level cache, the P = 1 run is faster
-  than main memory allows, which makes T(1) look especially good.
-- **Compare with lec01.** Which law, Amdahl's or Gustafson's, describes each
-  experiment?
-- **Try a much smaller n**, e.g. `make run N_PER_THREAD=10000`. What changes,
-  and why? (Hint: thread startup and synchronization overhead.)
-- **Why report the median of several runs** instead of a single run?
-
 ## Note for macOS
 
 Apple's default `clang` does not support `-fopenmp`. Use a Linux machine, or
